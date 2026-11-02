@@ -1,0 +1,1 @@
+.venv\Scripts\python.exe -m uvicorn backend.main:app --port 8000 --reload

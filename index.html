@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Raksha — Disaster Intelligence &amp; Response Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@300;400;500;600&family=Noto+Sans+Devanagari:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="public.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <span class="mark">RAKSHA</span>
+    <span class="sub">Disaster Intelligence &amp; Response Assistant</span>
+  </div>
+  <nav class="tabs" id="tabs">
+    <button data-tab="report" class="active">Report</button>
+    <button data-tab="public">Public View</button>   <!-- NEW -->
+    <button data-tab="center">Control Room</button>
+    <button data-tab="assistant">Assistant</button>
+    <button data-tab="sitrep">Situation Report</button>
+  </nav>
+  <div class="status" id="status"><span class="dot"></span><span id="status-text">connecting…</span></div>
+</header>
+
+<main>
+
+<!-- ============ REPORT ============ -->
+<section id="tab-report" class="tab active">
+  <div class="hero">
+    <p class="eyebrow">Citizen report</p>
+    <h1>Tell us what is happening.</h1>
+    <p class="lede">Speak or type in Marathi, Hindi or English. Raksha turns it into a structured, prioritised incident for the control room, and replies to you in your own language.</p>
+  </div>
+
+  <div class="two">
+    <div class="panel">
+      <div class="row between">
+        <label class="lbl" for="lang">Language</label>
+        <select id="lang">
+          <option value="auto">Detect automatically</option>
+          <option value="mr">मराठी</option>
+          <option value="hi">हिन्दी</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+      <label class="lbl" for="report-text">Your report</label>
+      <textarea id="report-text" rows="6" placeholder="e.g. Water is entering our ground-floor flat near Karve Road, 5 people including a child need help…"></textarea>
+
+      <div class="row wrap">
+        <button id="btn-rec" class="btn ghost" type="button"><span class="rec-dot"></span><span id="rec-label">Record voice</span></button>
+        <button id="btn-gps" class="btn ghost" type="button">Share my location</button>
+        <span id="rec-status" class="mute small"></span>
+      </div>
+      <div class="row">
+        <button id="submit-report" class="btn" type="button">Submit report</button>
+        <span id="submit-msg" class="mute small"></span>
+      </div>
+
+      <p class="lbl topgap">Try a sample</p>
+      <div id="sample-chips" class="chips"></div>
+    </div>
+
+    <div class="panel" id="result-panel">
+      <div id="result-empty" class="empty">
+        <p class="serif big">Your structured report will appear here.</p>
+        <p class="mute">Incident type, location, priority with the reasons behind it, resources likely needed, and a spoken reply in your language.</p>
+      </div>
+      <div id="result-body" hidden></div>
+    </div>
+  </div>
+</section>
+
+
+
+
+<!-- ============ PUBLIC VIEW ============ -->
+<section id="tab-public" class="tab">
+  <div class="hero">
+    <p class="eyebrow">Public view</p>
+    <h1>What is happening, right now.</h1>
+    <p class="lede">Every active citizen report on one map, updated live. Reports are anonymised and many are not yet verified. Ask a question below by voice or text.</p>
+  </div>
+
+  <div class="banner">
+    <p><strong>Read this first.</strong> These are reports from members of the public, not official alerts. A filled pin has been verified by a person; a hollow pin has not. No pin in your area does not mean it is safe. For official warnings follow IMD, NDMA and local authorities. If anyone is in danger, call <strong>112</strong>.</p>
+    <button class="btn" id="p-report-btn" type="button">Report an emergency</button>
+  </div>
+
+  <div class="stats s4" id="p-stats"></div>
+
+  <div class="filters pub-filters">
+    <select id="p-incident"><option value="">All incident types</option></select>
+    <select id="p-verified"><option value="">All reports</option><option value="verified">Verified only</option><option value="unverified">Unverified only</option></select>
+    <input type="text" id="p-search" placeholder="Search an area, e.g. Kothrud">
+    <span class="grow"><label class="lbl" for="p-lang" style="margin:0">Language</label>
+      <select id="p-lang"><option value="auto">Auto-detect</option><option value="en">English</option><option value="hi">हिन्दी</option><option value="mr">मराठी</option></select></span>
+  </div>
+
+  <div class="center-grid pub-grid">
+    <div class="right">
+      <div id="pmap"></div>
+      <div class="legend">
+        <span><i class="f"></i>Verified</span>
+        <span><i></i>Not yet verified</span>
+        <span><i class="h"></i>Several reports in one area</span>
+        <button class="linkish" id="p-showall" type="button">Show all reports</button>
+      </div>
+      <div id="pdetail" class="detail" hidden></div>
+    </div>
+    <div class="list" id="p-list"></div>
+  </div>
+
+  <div class="pub-ask">
+    <p class="eyebrow">Ask</p>
+    <h2 class="serif big" style="font-size:36px">Ask about the situation.</h2>
+    <p class="lede" style="margin-bottom:22px">Ask in English, Hindi or Marathi, by typing or speaking. Answers come only from the reports shown above, and the matching pins light up on the map.</p>
+    <div class="chat-wrap">
+      <div id="pchat" class="chat"></div>
+      <div class="chips" id="pask-chips" style="margin:14px 0"></div>
+      <div class="chat-input">
+        <button id="btn-pask-mic" class="btn ghost" type="button" title="Ask by voice">Voice</button>
+        <input id="pask-text" type="text" placeholder="e.g. Is there flooding near Karve Road?">
+        <button id="btn-pask" class="btn" type="button">Ask</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONTROL ROOM ============ -->
+<section id="tab-center" class="tab">
+  <div class="row between wrap headrow">
+    <div>
+      <p class="eyebrow">Control room</p>
+      <h1 class="h1s">Live incident picture</h1>
+    </div>
+    <div class="row wrap">
+      <button class="btn ghost" id="btn-seed" type="button">Load demo data</button>
+      <button class="btn ghost" id="btn-reset" type="button">Clear all</button>
+    </div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="filters">
+    <select id="f-level"><option value="">All priorities</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select>
+    <select id="f-incident"><option value="">All incident types</option></select>
+    <select id="f-status"><option value="">Open reports</option><option value="new">Unverified</option><option value="verified">Verified</option><option value="false_alarm">False alarm</option><option value="resolved">Resolved</option></select>
+    <span class="mute small" id="refresh-note">Auto-refreshing every 6 seconds</span>
+  </div>
+
+  <div class="center-grid">
+    <div class="list" id="list"></div>
+    <div class="right">
+      <div id="map"></div>
+      <div id="detail" class="detail" hidden></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ASSISTANT ============ -->
+<section id="tab-assistant" class="tab">
+  <div class="hero">
+    <p class="eyebrow">Assistant</p>
+    <h1>Ask the control room anything.</h1>
+    <p class="lede">It reads the live reports and answers in your language. It summarises and prioritises; it never dispatches or decides.</p>
+  </div>
+  <div class="chat-wrap">
+    <div id="chat" class="chat"></div>
+    <div class="chips" id="ask-chips"></div>
+    <div class="chat-input">
+      <button id="btn-ask-mic" class="btn ghost" type="button" title="Ask by voice">Voice</button>
+      <input id="ask-text" type="text" placeholder="e.g. Which reports need immediate human review?">
+      <button id="btn-ask" class="btn" type="button">Ask</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SITREP ============ -->
+<section id="tab-sitrep" class="tab">
+  <div class="row between wrap headrow">
+    <div>
+      <p class="eyebrow">Situation report</p>
+      <h1 class="h1s">One-click SITREP</h1>
+    </div>
+    <div class="row wrap">
+      <select id="sitrep-lang"><option value="en">English</option><option value="hi">हिन्दी</option><option value="mr">मराठी</option></select>
+      <button class="btn" id="btn-sitrep" type="button">Generate</button>
+      <button class="btn ghost" id="btn-sitrep-listen" type="button" disabled>Listen</button>
+      <button class="btn ghost" id="btn-sitrep-copy" type="button" disabled>Copy</button>
+      <button class="btn ghost" id="btn-sitrep-print" type="button" disabled>Print</button>
+    </div>
+  </div>
+  <article id="sitrep-doc" class="doc"><p class="mute">Press Generate to compile every active report into a briefing for authorities, in English, Hindi or Marathi.</p></article>
+</section>
+
+</main>
+
+<footer class="foot">
+  <span>Raksha is a decision-support prototype. Reports are unverified and a human always decides. In an emergency call 112.</span>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="app.js"></script>
+<script src="public.js"></script>
+<script src="sim.js"></script>
+</body>
+</html>

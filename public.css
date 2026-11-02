@@ -1,0 +1,32 @@
+/* Raksha: Public View additions. Same monochrome language as styles.css. */
+.banner { border: 1px solid var(--ink); border-left-width: 5px; padding: 14px 20px; margin: 0 0 20px; font-size: 14px; display: flex; gap: 18px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.banner p { max-width: 760px; }
+.stats.s4 { grid-template-columns: repeat(4, 1fr); }
+.pub-grid { grid-template-columns: minmax(0, 1fr) 430px; }
+.pub-filters select, .pub-filters input[type=text] { width: auto; font-size: 13px; padding: 9px 12px; }
+.pub-filters input[type=text] { min-width: 220px; }
+.pub-filters .grow { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+#pmap { height: 560px; border: 1px solid var(--ink); background: var(--soft); }
+.legend { display: flex; gap: 22px; flex-wrap: wrap; font-size: 12.5px; color: var(--mute); padding: 10px 0 14px; align-items: center; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--ink); margin-right: 7px; vertical-align: -2px; background: #fff; }
+.legend i.f { background: var(--ink); }
+.legend i.h { width: 17px; height: 17px; border: 1px dashed var(--ink); background: transparent; vertical-align: -4px; }
+.legend .linkish { margin-left: auto; background: none; border: none; font: inherit; font-size: 12.5px; color: var(--ink); text-decoration: underline; cursor: pointer; padding: 0; }
+.tag.pv { background: var(--ink); color: #fff; }
+.item.hl { background: var(--soft); box-shadow: inset 4px 0 0 var(--ink); }
+#p-list { max-height: 760px; }
+#pdetail { margin-top: 0; border-top: 1px solid var(--ink); }
+.pub-ask { margin-top: 64px; }
+.pub-ask .chat-wrap { max-width: 900px; }
+.msg-listen { margin-top: 10px; }
+.btn.recording { background: var(--ink); color: #fff; }
+
+@media (max-width: 1000px) {
+  .pub-grid { grid-template-columns: 1fr; }
+  .stats.s4 { grid-template-columns: repeat(2, 1fr); }
+  #pmap { height: 420px; }
+  .pub-filters .grow { margin-left: 0; }
+}
+@media print {
+  #tab-public { display: none !important; }
+}
